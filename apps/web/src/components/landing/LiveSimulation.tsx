@@ -2,44 +2,77 @@
 
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2, CircleDashed, Loader2 } from "lucide-react";
-
-const SIMULATION_STEPS = [
-  { id: 1, text: "Understanding intent", delay: 1000 },
-  { id: 2, text: "Fetching contacts from CRM", delay: 2500 },
-  { id: 3, text: "Writing personalized email", delay: 4500 },
-  { id: 4, text: "Sending to 14 investors", delay: 6500 },
-];
+import { CheckCircle2, CircleDashed, Loader2, Play, Sparkles } from "lucide-react";
 
 export default function LiveSimulation() {
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, { once: true, margin: "-100px" });
   
-  const [activeStep, setActiveStep] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
+  const [input, setInput] = useState("Generate a 3-sentence elevator pitch for NeuroFlow AI");
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [actions, setActions] = useState<{id: number, text: string, status: 'pending'|'active'|'done'}[]>([]);
+  const [finalResult, setFinalResult] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isInView) return;
-
-    let timeouts: NodeJS.Timeout[] = [];
+  const triggerLiveExecution = async () => {
+    if (!input.trim() || isExecuting) return;
     
-    SIMULATION_STEPS.forEach((step, index) => {
-      const t = setTimeout(() => {
-        setActiveStep(step.id);
-        if (index === SIMULATION_STEPS.length - 1) {
-          setTimeout(() => setIsComplete(true), 1500);
-        }
-      }, step.delay);
-      timeouts.push(t);
-    });
+    setIsExecuting(true);
+    setFinalResult(null);
+    setActions([
+        { id: 1, text: "Connecting to NeuroFlow API...", status: "active" },
+        { id: 2, text: "Parsing Intent via Gemini 2.5", status: "pending" },
+        { id: 3, text: "Executing Plan", status: "pending" }
+    ]);
 
-    return () => timeouts.forEach(clearTimeout);
-  }, [isInView]);
+    try {
+      const res = await fetch("/api/runNeuroFlow", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input, context: { page: "landing_demo" } })
+      });
+      
+      setActions(prev => [
+          { id: 1, text: "NeuroFlow API Connected", status: "done" },
+          { id: 2, text: "Intent Parsed Successfully", status: "active" },
+          { id: 3, text: "Executing Plan", status: "pending" }
+      ]);
+      
+      const data = await res.json();
+      
+      setTimeout(() => {
+          if (data.success) {
+            setActions([
+                { id: 1, text: "NeuroFlow API Connected", status: "done" },
+                { id: 2, text: `Intent Parsed: ${data.intent.action}`, status: "done" },
+                { id: 3, text: `Execution Output Generated`, status: "done" }
+            ]);
+            
+            const streamMsg = data.data?.actions?.find((a: any) => a.type === "stream")?.message;
+            setFinalResult(streamMsg || `Action Executed: ${data.intent.action}`);
+          } else {
+            setActions(prev => prev.map(a => a.id === 3 ? { ...a, text: `Execution Failed: ${data.error}`, status: "done" } : { ...a, status: "done" }));
+          }
+          setIsExecuting(false);
+      }, 1000);
+      
+    } catch (e) {
+      setActions(prev => prev.map(a => ({ ...a, status: "done", text: "Network Error" })));
+      setIsExecuting(false);
+    }
+  };
 
   return (
     <section ref={containerRef} className="py-32 px-6 flex flex-col items-center justify-center border-t border-white/5">
       <div className="max-w-3xl w-full">
         
+        <div className="text-center mb-12">
+           <h2 className="text-3xl font-bold text-white mb-4 flex items-center justify-center gap-3">
+             <Sparkles className="text-[#7C3AED]" /> 
+             Live Architecture Demo
+           </h2>
+           <p className="text-white/40">This is not a mock. Type a command below to ping the real NeuroFlow Engine.</p>
+        </div>
+
         <motion.div 
           initial={{ opacity: 0, filter: "blur(10px)" }}
           animate={isInView ? { opacity: 1, filter: "blur(0px)" } : {}}
@@ -53,55 +86,62 @@ export default function LiveSimulation() {
             {/* Input Phase */}
             <div className="space-y-3">
               <div className="text-xs uppercase tracking-widest text-[#7C3AED] font-bold">User Input</div>
-              <div className="bg-black/50 border border-white/5 rounded-xl p-4 flex items-center gap-3 w-fit">
-                 <div className="w-2 h-2 rounded-full bg-[#7C3AED] animate-pulse" />
-                 <span className="text-lg md:text-xl font-medium text-white/90">"Send update to investors"</span>
+              <div className="flex items-center gap-3">
+                  <input 
+                    type="text" 
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    disabled={isExecuting}
+                    className="flex-grow bg-black/50 border border-white/10 rounded-xl p-4 text-white/90 focus:outline-none focus:border-[#7C3AED]/50 transition-colors"
+                  />
+                  <button 
+                    onClick={triggerLiveExecution}
+                    disabled={isExecuting || !input.trim()}
+                    className="h-14 px-6 rounded-xl bg-[#7C3AED] hover:bg-[#6D28D9] disabled:opacity-50 text-white font-medium flex items-center gap-2 transition-colors"
+                  >
+                     {isExecuting ? <Loader2 className="animate-spin" size={18} /> : <Play size={18} fill="currentColor" />}
+                     Run
+                  </button>
               </div>
             </div>
 
             {/* Execution Stream Phase */}
-            <div className="space-y-4">
-               <div className="text-xs uppercase tracking-widest text-white/30 font-bold">System Execution</div>
-               
-               <div className="flex flex-col gap-3 font-mono text-sm md:text-base">
-                 {SIMULATION_STEPS.map((step) => {
-                   const isPast = activeStep > step.id || isComplete;
-                   const isCurrent = activeStep === step.id && !isComplete;
-                   const isFuture = activeStep < step.id && !isComplete;
-
-                   if (isFuture && step.id > activeStep + 1) return null; // reveal sequentially
-
-                   return (
-                     <motion.div 
-                       key={step.id}
-                       initial={{ opacity: 0, x: -10 }}
-                       animate={{ opacity: 1, x: 0 }}
-                       className={`flex items-center gap-3 ${isPast ? 'text-white/60' : isCurrent ? 'text-[#7C3AED] glow-text' : 'text-white/20'}`}
-                     >
-                       {isPast ? (
-                         <CheckCircle2 size={18} className="text-emerald-500" />
-                       ) : isCurrent ? (
-                         <Loader2 size={18} className="animate-spin" />
-                       ) : (
-                         <CircleDashed size={18} />
-                       )}
-                       <span>{step.text}</span>
-                     </motion.div>
-                   );
-                 })}
-               </div>
-            </div>
+            {actions.length > 0 && (
+                <div className="space-y-4">
+                   <div className="text-xs uppercase tracking-widest text-white/30 font-bold">Live Execution Stream</div>
+                   
+                   <div className="flex flex-col gap-3 font-mono text-sm md:text-base">
+                     {actions.map((step) => (
+                         <motion.div 
+                           key={step.id}
+                           initial={{ opacity: 0, x: -10 }}
+                           animate={{ opacity: 1, x: 0 }}
+                           className={`flex items-center gap-3 ${step.status === 'done' ? 'text-white/60' : step.status === 'active' ? 'text-[#7C3AED] glow-text' : 'text-white/20'}`}
+                         >
+                           {step.status === 'done' ? (
+                             <CheckCircle2 size={18} className="text-emerald-500" />
+                           ) : step.status === 'active' ? (
+                             <Loader2 size={18} className="animate-spin" />
+                           ) : (
+                             <CircleDashed size={18} />
+                           )}
+                           <span>{step.text}</span>
+                         </motion.div>
+                     ))}
+                   </div>
+                </div>
+            )}
 
             {/* Final Output Phase */}
             <AnimatePresence>
-              {isComplete && (
+              {finalResult && (
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   className="mt-4 pt-6 border-t border-white/10"
                 >
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5 backdrop-blur-sm">
-                    <p className="text-emerald-400 font-medium font-mono">Process Complete: Update sent to 14 investors.</p>
+                  <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-5 backdrop-blur-sm">
+                    <p className="text-emerald-400 font-medium whitespace-pre-wrap">{finalResult}</p>
                   </div>
                 </motion.div>
               )}

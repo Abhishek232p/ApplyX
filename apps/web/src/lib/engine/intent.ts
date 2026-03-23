@@ -1,3 +1,11 @@
+export interface IntentTask {
+  type: string;
+  to?: string;
+  subject?: string;
+  body?: string;
+  [key: string]: any;
+}
+
 export interface IntentResult {
   intent: string;
   action: string;
@@ -5,6 +13,7 @@ export interface IntentResult {
   generated_text?: string;
   context: any;
   priority: string;
+  tasks?: IntentTask[];
 }
 
 export async function parseIntent(input: string, context?: any, memory?: any): Promise<IntentResult> {
@@ -15,14 +24,22 @@ export async function parseIntent(input: string, context?: any, memory?: any): P
       : '';
 
     const prompt = `You are the Intent Engine for NeuroFlow AI.
-Analyze the user input and determine what text needs to be generated or what action needs to be taken.
+Analyze the user input and determine what text needs to be generated or what action needs to be taken. If the user asks to send an email, update CRM, or trigger a multi-app workflow, format it in the tasks array.
 Return a JSON object exactly matching this schema:
 {
   "intent": "Brief description of the intent",
-  "action": "Specific action (e.g., 'insert_text', 'chat', 'update_preference')",
-  "generated_text": "The actual final text, email draft, or answer to the question",
+  "action": "Specific action (e.g., 'send_email', 'insert_text', 'chat', 'update_preference')",
+  "generated_text": "The final text, email draft, or answer",
   "context": {},
-  "priority": "high|medium|low"
+  "priority": "high|medium|low",
+  "tasks": [
+    {
+      "type": "gmail.send",
+      "to": "investor@example.com",
+      "subject": "Weekly Update",
+      "body": "Hello..."
+    }
+  ]
 }
 
 Context Elements: ${JSON.stringify(context || {})} ${memoryRules}

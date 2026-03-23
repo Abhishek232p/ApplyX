@@ -70,7 +70,7 @@ export default function HeroSection() {
           transition={{ duration: 0.8, delay: 1.2 }}
         >
           <Link href="/dashboard">
-            <button className="group relative px-8 py-4 rounded-full bg-white text-black font-semibold text-lg overflow-hidden transition-transform active:scale-95">
+            <button suppressHydrationWarning className="group relative px-8 py-4 rounded-full bg-white text-black font-semibold text-lg overflow-hidden transition-transform active:scale-95">
               <span className="relative z-10 flex items-center gap-2">
                 Try the system
               </span>

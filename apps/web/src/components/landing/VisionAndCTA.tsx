@@ -56,8 +56,9 @@ export default function VisionAndCTA() {
                <p className="text-white/50 text-sm">We'll notify you when your node is ready.</p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+            <form onSubmit={handleSubmit} suppressHydrationWarning className="flex flex-col sm:flex-row gap-3">
               <input 
+                suppressHydrationWarning
                 type="email" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -66,6 +67,7 @@ export default function VisionAndCTA() {
                 className="flex-grow px-6 py-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-[#7C3AED]/50 focus:ring-1 focus:ring-[#7C3AED]/50 transition-all text-lg"
               />
               <button 
+                suppressHydrationWarning
                 type="submit"
                 className="px-8 py-4 rounded-xl bg-white text-black font-semibold text-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 group whitespace-nowrap"
               >
