@@ -1,5 +1,6 @@
 import HeroSection from "@/components/landing/HeroSection";
 import LiveSimulation from "@/components/landing/LiveSimulation";
+import ComparisonSection from "@/components/landing/Comparison";
 import CoreStatement from "@/components/landing/CoreStatement";
 import HowItWorks from "@/components/landing/HowItWorks";
 import FounderLetter from "@/components/landing/FounderLetter";
@@ -11,6 +12,7 @@ export default function LandingPage() {
     <main className="bg-[#050505] min-h-screen text-[#F2F2F2] selection:bg-[#7C3AED]/30 overflow-x-hidden font-sans">
       <HeroSection />
       <LiveSimulation />
+      <ComparisonSection />
       <CoreStatement />
       <HowItWorks />
       <FounderLetter />

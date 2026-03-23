@@ -88,6 +88,7 @@ export default function LiveSimulation() {
               <div className="text-xs uppercase tracking-widest text-[#7C3AED] font-bold">User Input</div>
               <div className="flex items-center gap-3">
                   <input 
+                    suppressHydrationWarning
                     type="text" 
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
@@ -95,6 +96,7 @@ export default function LiveSimulation() {
                     className="flex-grow bg-black/50 border border-white/10 rounded-xl p-4 text-white/90 focus:outline-none focus:border-[#7C3AED]/50 transition-colors"
                   />
                   <button 
+                    suppressHydrationWarning
                     onClick={triggerLiveExecution}
                     disabled={isExecuting || !input.trim()}
                     className="h-14 px-6 rounded-xl bg-[#7C3AED] hover:bg-[#6D28D9] disabled:opacity-50 text-white font-medium flex items-center gap-2 transition-colors"

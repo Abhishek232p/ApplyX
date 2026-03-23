@@ -8,9 +8,18 @@ export default function VisionAndCTA() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
+       try {
+           await fetch('/api/waitlist', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ email })
+           });
+       } catch (error) {
+           console.error("Waitlist Error:", error);
+       }
        setSubmitted(true);
        setTimeout(() => {
           setEmail("");
