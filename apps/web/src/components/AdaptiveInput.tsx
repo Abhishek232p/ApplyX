@@ -25,6 +25,7 @@ export default function WisprInput({ onSubmit, status }: WisprInputProps) {
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
+      recognitionRef.current.lang = window.navigator.language || 'en-US';
       
       recognitionRef.current.onresult = (event: any) => {
         let currentTranscript = "";

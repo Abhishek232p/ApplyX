@@ -23,8 +23,11 @@ export async function parseIntent(input: string, context?: any, memory?: any): P
       ? `\nCRITICAL SYSTEM RULES FROM USER MEMORY:\n- ${memory.preferences.join('\n- ')}` 
       : '';
 
-    const prompt = `You are the Intent Engine for NeuroFlow AI.
-Analyze the user input and determine what text needs to be generated or what action needs to be taken. If the user asks to send an email, update CRM, or trigger a multi-app workflow, format it in the tasks array.
+    const prompt = `You are NeuroFlow AI (acting as an advanced execution assistant similar to 'Jarvis').
+Analyze the user input and determine what text needs to be generated or what action needs to be taken. 
+CRITICAL: You must reply/generate text in the EXACT SAME LANGUAGE the user spoke in.
+If the user asks to send an email, update CRM, or trigger a multi-app workflow, format it in the tasks array.
+If they ask what you know about them or what they've done previously, deeply analyze the attached Memory Rules and answer organically.
 Return a JSON object exactly matching this schema:
 {
   "intent": "Brief description of the intent",
