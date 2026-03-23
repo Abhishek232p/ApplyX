@@ -1,11 +1,11 @@
-import HeroSection from "@/components/landing/HeroSection";
-import LiveSimulation from "@/components/landing/LiveSimulation";
-import ComparisonSection from "@/components/landing/Comparison";
-import CoreStatement from "@/components/landing/CoreStatement";
-import HowItWorks from "@/components/landing/HowItWorks";
-import FounderLetter from "@/components/landing/FounderLetter";
-import VisionAndCTA from "@/components/landing/VisionAndCTA";
-import Footer from "@/components/landing/Footer";
+import HeroSection from "../components/landing/HeroSection";
+import LiveSimulation from "../components/landing/LiveSimulation";
+import ComparisonSection from "../components/landing/Comparison";
+import CoreStatement from "../components/landing/CoreStatement";
+import HowItWorks from "../components/landing/HowItWorks";
+import FounderLetter from "../components/landing/FounderLetter";
+import VisionAndCTA from "../components/landing/VisionAndCTA";
+import Footer from "../components/landing/Footer";
 
 export default function LandingPage() {
   return (
