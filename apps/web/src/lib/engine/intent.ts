@@ -7,21 +7,25 @@ export interface IntentResult {
   priority: string;
 }
 
-export async function parseIntent(input: string, context?: any): Promise<IntentResult> {
+export async function parseIntent(input: string, context?: any, memory?: any): Promise<IntentResult> {
   console.log("=== API ROUTE: PARSING INTENT VIA REST ===");
   try {
+    const memoryRules = memory?.preferences?.length > 0 
+      ? `\nCRITICAL SYSTEM RULES FROM USER MEMORY:\n- ${memory.preferences.join('\n- ')}` 
+      : '';
+
     const prompt = `You are the Intent Engine for NeuroFlow AI.
 Analyze the user input and determine what text needs to be generated or what action needs to be taken.
 Return a JSON object exactly matching this schema:
 {
   "intent": "Brief description of the intent",
-  "action": "Specific action (e.g., 'insert_text', 'chat')",
+  "action": "Specific action (e.g., 'insert_text', 'chat', 'update_preference')",
   "generated_text": "The actual final text, email draft, or answer to the question",
   "context": {},
   "priority": "high|medium|low"
 }
 
-Context: ${JSON.stringify(context || {})}
+Context Elements: ${JSON.stringify(context || {})} ${memoryRules}
 User Input: ${input}`;
 
     const apiKey = process.env.GEMINI_API_KEY;

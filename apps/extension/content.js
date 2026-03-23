@@ -1,6 +1,8 @@
-// NeuroFlow Advanced Execution Layer
+// NeuroFlow Advanced Execution Layer (with Proactive Auto-Pilot)
 let recognition;
 let isRecording = false;
+let proactiveTimer = null;
+let currentSuggestion = null;
 
 function injectFloatingUI() {
   if (document.getElementById("nf-root-container")) return;
@@ -8,6 +10,10 @@ function injectFloatingUI() {
   const container = document.createElement("div");
   container.id = "nf-root-container";
   container.innerHTML = `
+    <div id="nf-suggestion-box" class="nf-suggestion-box" title="Click to execute">
+      <span>✨</span>
+      <span id="nf-suggestion-text"></span>
+    </div>
     <div id="nf-status-badge" class="nf-status-badge">Processing...</div>
     <div class="nf-pill" id="nf-pill">
       <button id="nf-mic-btn" class="nf-mic-btn" title="Click to dictate">
@@ -20,6 +26,28 @@ function injectFloatingUI() {
 
   setupSpeechRecognition();
   setupEventListeners();
+  resetProactiveTimer(); // Start the auto-pilot idle observer
+}
+
+function resetProactiveTimer() {
+  clearTimeout(proactiveTimer);
+  // Auto-Pilot: Analyze the page after 4 seconds of idle time
+  proactiveTimer = setTimeout(fetchProactiveSuggestion, 4000); 
+}
+
+async function fetchProactiveSuggestion() {
+  const context = getPageContext();
+  // Don't poll if page is empty or we are recording voice
+  if (!context || !context.bodySnippet || context.bodySnippet.length < 100 || isRecording) return;
+  
+  chrome.runtime.sendMessage({ type: "CHECK_PROACTIVE", context }, (response) => {
+    if (response && response.suggestion) {
+       currentSuggestion = response.suggestion;
+       const box = document.getElementById("nf-suggestion-box");
+       document.getElementById("nf-suggestion-text").innerText = "Suggests: " + currentSuggestion;
+       box.classList.add("visible");
+    }
+  });
 }
 
 function setupSpeechRecognition() {
@@ -32,6 +60,7 @@ function setupSpeechRecognition() {
       isRecording = true;
       document.getElementById("nf-mic-btn").classList.add("recording");
       document.getElementById("nf-input").placeholder = "Listening...";
+      document.getElementById("nf-suggestion-box").classList.remove("visible"); // Hide suggestions while talking
     };
     
     recognition.onresult = (event) => {
@@ -50,6 +79,7 @@ function setupSpeechRecognition() {
       isRecording = false;
       document.getElementById("nf-mic-btn").classList.remove("recording");
       document.getElementById("nf-input").placeholder = "Dictate to NeuroFlow...";
+      resetProactiveTimer();
     };
   } else {
      console.warn("Speech Recognition API not supported in this browser environment.");
@@ -59,6 +89,19 @@ function setupSpeechRecognition() {
 function setupEventListeners() {
   const input = document.getElementById("nf-input");
   const micBtn = document.getElementById("nf-mic-btn");
+  const suggestionBox = document.getElementById("nf-suggestion-box");
+
+  // Keep auto-pilot aware of activity
+  document.addEventListener("mousemove", resetProactiveTimer, { passive: true });
+  document.addEventListener("keydown", resetProactiveTimer, { passive: true });
+  document.addEventListener("scroll", resetProactiveTimer, { passive: true });
+
+  suggestionBox.addEventListener("click", () => {
+     if (currentSuggestion) {
+         suggestionBox.classList.remove("visible");
+         processCommand("Proactive Execution Request: " + currentSuggestion);
+     }
+  });
 
   micBtn.addEventListener("click", () => {
     if (isRecording) {
@@ -103,6 +146,7 @@ function getPageContext() {
 
 function processCommand(text) {
   showStatus("Processing Intent globally...");
+  document.getElementById("nf-suggestion-box").classList.remove("visible");
   
   const context = getPageContext();
   const focusedNode = document.activeElement; // Capture node before async await loses focus
@@ -117,6 +161,7 @@ function processCommand(text) {
       console.error(response);
     }
   });
+  resetProactiveTimer();
 }
 
 function executeActions(actions, focusedNode) {

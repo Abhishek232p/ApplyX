@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { parseIntent } from '@/lib/engine/intent';
-import { retrieveMemory } from '@/lib/engine/memory';
+import { retrieveMemory, storeMemory } from '@/lib/engine/memory';
 import { generatePlan } from '@/lib/engine/planning';
 import { executePlan } from '@/lib/engine/execution';
 
@@ -25,11 +25,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Input is required." }, { status: 400, headers: CORS_HEADERS });
     }
 
-    // Pipeline Step 1: Intent
-    const intent = await parseIntent(input, context);
+    // Pipeline Step 1: Memory (Retrieve context first so the Intent engine knows the user)
+    const memory = await retrieveMemory(userId, input);
 
-    // Pipeline Step 2: Memory
-    const memory = await retrieveMemory(userId, intent.intent);
+    // Pipeline Step 2: Intent (pass memory to Gemini)
+    const intent = await parseIntent(input, context, memory);
+
+    // If intent is an explicit memory instruction (e.g., "remember that my name is...")
+    if (intent.action === "update_preference" || input.toLowerCase().includes("remember")) {
+        await storeMemory(userId, intent.generated_text || input);
+    }
 
     // Pipeline Step 3: Plan
     const plan = await generatePlan(intent, memory);

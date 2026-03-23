@@ -105,6 +105,7 @@ export default function WisprInput({ onSubmit, status }: WisprInputProps) {
         className="relative"
       >
         <form
+          suppressHydrationWarning
           onSubmit={handleSubmit}
           className={`flex items-center gap-2 px-3 py-2.5 rounded-full transition-all duration-300 backdrop-blur-3xl overflow-hidden
             ${isFocused || isRecording
@@ -115,6 +116,7 @@ export default function WisprInput({ onSubmit, status }: WisprInputProps) {
         >
           {/* Interactive Mic Button */}
           <button 
+            suppressHydrationWarning
             type="button"
             onClick={toggleRecording}
             className={`flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full transition-all ${isRecording ? "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]" : "bg-gradient-to-br from-[#3b82f6] to-[#8b5cf6]"} text-white shadow-inner cursor-pointer`}
@@ -138,6 +140,7 @@ export default function WisprInput({ onSubmit, status }: WisprInputProps) {
           </button>
           
           <input
+            suppressHydrationWarning
             ref={inputRef}
             type="text"
             value={input}
