@@ -1,0 +1,101 @@
+/* Glassmorphic Wispr UI for NeuroFlow */
+#nf-root-container {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647; /* Max z-index */
+  font-family: system-ui, -apple-system, sans-serif;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.nf-pill {
+  display: flex;
+  align-items: center;
+  background: rgba(10, 10, 14, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 8px 16px;
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
+  gap: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.nf-input {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 15px;
+  font-weight: 400;
+  width: 250px;
+  padding: 8px 4px;
+  outline: none;
+  transition: width 0.3s;
+}
+
+.nf-input::placeholder {
+  color: rgba(255,255,255,0.4);
+}
+
+.nf-input:focus {
+  width: 380px;
+}
+
+.nf-mic-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.nf-mic-btn:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+.nf-mic-btn.recording {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.5);
+  color: #c4b5fd;
+  animation: nf-pulse 2s infinite;
+}
+
+@keyframes nf-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); }
+}
+
+.nf-status-badge {
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  color: #c4b5fd;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.nf-status-badge.visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
